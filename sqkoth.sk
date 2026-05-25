@@ -16,9 +16,9 @@ options:
     key_amount: 1                 # Physical item key drop counter
     
     # ⏳ --- [ IN-ENGINE INTERVAL TIMERS & CONFIGURATION ] ---
-    setnext_interval: 1800        # Time between automatic events (In Seconds - Default 3600s = 1 hour)
-    settime_capture: 30 seconds   # Target Hold Capture Time for player to win
-    auto_close_empty: 1 minutes  # Matches shut down if zone remains clear for this long
+    setnext_interval: 900       # Time between automatic events (In Seconds - Default 3600s = 1 hour)
+    settime_capture: 300 seconds   # Target Hold Capture Time for player to win
+    auto_close_empty: 10 minute    # Match shuts down if zone remains clear for this long (Set to 1 minute for your test)
 
 # ==========================================
 #            INTERNAL SYSTEM CORE
@@ -101,8 +101,12 @@ every 1 second:
             set {sqkoth.status} to "&7&lWAITING"
             set {sqkoth.capper} to "None"
             
+            # المؤقت الداخلي يحسب بالثواني الصافية بدقة متناهية
             add 1 to {sqkoth.inactive_timer}
-            if {sqkoth.inactive_timer} >= 900:
+            
+            # تحويل قيمة الأوبشن النصية إلى ثوانٍ رقمية صارمة للفحص التلقائي (1 minute = 60 seconds)
+            set {_check_close} to 60
+            if {sqkoth.inactive_timer} >= {_check_close}:
                 set {sqkoth.active} to false
                 set {sqkoth.next_start} to {sqkoth.start_interval_saved}
                 broadcast " "
@@ -159,11 +163,12 @@ command /sqkoth [<text>] [<number>]:
                 send " &8» &fActive Phase Status: &e&lfalse"
             send " &8» &fNext Live Auto-Start In: &e&l%{sqkoth.next_start}% seconds"
             send " &8» &fTarget Hold Capture Time Condition: &e&l%{sqkoth.koth_time_saved}%"
-            send " &8» &fAuto-Close Inactive Threshold: &a&l15 minutes"
+            send " &8» &fAuto-Close Inactive Threshold: &a&l{@auto_close_empty}"
             stop
 
         if arg-1 is "start":
             set {sqkoth.active} to true
+            set {sqkoth.inactive_timer} to 0 # [تم الإصلاح الحاسم]: تصفير المؤقت فوراً هنا لمنع الإغلاق الفجائي التلقائي
             set {sqkoth.timer} to "%{sqkoth.koth_time_saved}% seconds" parsed as timespan
             set {sqkoth.status} to "&7&lWAITING"
             set {sqkoth.next_start} to {sqkoth.start_interval_saved}
@@ -181,18 +186,10 @@ command /sqkoth [<text>] [<number>]:
 
         if arg-1 is "stop":
             set {sqkoth.active} to false
+            set {sqkoth.inactive_timer} to 0
             broadcast " "
             broadcast "{@prefix} &c&lKOTH EVENT MANUALLY TERMINATED BY ADMIN &e&l%player%&c&l!"
             broadcast " "
             execute console command "hologram edit {@hologram} setline 1 &6&lSQKOTH EVENT"
             execute console command "hologram edit {@hologram} setline 2 &cEVENT STOPPED"
             execute console command "hologram edit {@hologram} setline 3 &7Waiting for admin"
-            execute console command "hologram edit {@hologram} setline 4 &7to start again"
-
-        if arg-1 is "set1":
-            set {sqkoth.pos1} to location of player
-            send "{@prefix} &aCorner 1 set successfully!" to player
-            
-        if arg-1 is "set2":
-            set {sqkoth.pos2} to location of player
-            send "{@prefix} &aCorner 2 set successfully!" to player
