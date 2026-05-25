@@ -74,3 +74,5 @@ Ensure you possess the administrative permission node **`sqkoth.admin`** before 
 * **`/sqkoth stop`** — Forcefully terminates any active matching state, wipes capture trackers, and returns the world to idle wait states.
 * **`/sqkoth status`** — Pulls live data streams from the caching core to inspect current phase values, positions state variables, and interval thresholds.
 * **`/sqkoth reload`** — Safely flushes memory blocks, unloads dead caching threads, and parses script updates from your core file directory.
+
+you can join my discord server if you want [: **`https://discord.gg/28pTmAYCwH`**
