@@ -1,9 +1,5 @@
 # SQKoth - King of the hill — Official Stable Release v1.0.0
 
-[![Minecraft Version](https://shields.io)](https://papermc.io)
-[![Skript Dependency](https://shields.io)](https://github.com)
-[![Performance](https://shields.io)](https://github.com)
-
 An advanced, highly-optimized, and completely autonomous **King of the Hill (KOTH)** event system engineered entirely in pure Skript. Designed specifically for high-performance PvP server environments and fully compatible with low-spec hardware hosts like Aternos without causing any ticks drop or background memory leaks.
 
 ---
