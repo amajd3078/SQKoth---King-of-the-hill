@@ -1,195 +1,203 @@
 # ==========================================================================
-#                      SQKOTH SYSTEM - OFFICIAL RELEASE
+#  ___  ___    _  _____ _____ _   _     ____ ___ _____ _____     ____  _  __
+# / _ \/ _ \  | |/ / _ \_   _| | | |   | __ ) _ \_   _| ____|   / ___|| |/ /
+# \_ // / /|  | ' / | | || | | |_| |   |  _ \ | | || | |  _|     \___ \| ' / 
+#  /__/ /_/|  | . \ |_| || | |  _  |   | |_) | |_| || | | |___    ___) | . \ 
+#  \_/ \____| |_|\_\___/ |_| |_| |_|   |____/___/ |_| |_____|  |____/|_|\_\
+#                                                                           
+#  - Name: SQKOTH (King of the Hill)
+#  - Version: 5.1.0 (Official GitHub Final Release)
+#  - Category: BoxPvP / PvP MiniGame Mini-Engine
+#  - Environment: Vanilla Skript (Zero Addons Required)
+#  - Compatible Software: Minecraft 1.21.1+ (Paper / Purpur)
+#  - Required Plugins: Skript, FancyHolograms, Vault, EssentialsX
+#  - Tutorial: https://github.com/amajd3078/SQKoth---King-of-the-hill
 # ==========================================================================
 
+# ==========================================
+#       QUICK CONFIGURATION SETUP
+# ==========================================
 options:
-    prefix: &6&lS&e&lQ&b&lKOTH &8»&f
+    prefix: &6&lS&e&lQ&6&lKOTH &8»&f
     hologram: koth_hologram 
-    
-    # --- [ VERSION CONTROL ] ---
-    current_version: 1.0.0-RELEASE
 
-    # ⚙️ --- [ EASY EDIT CORE SETTINGS - MODIFY HERE EASILY ] ---
-    # Here you can modify the reward
-    reward_money: 5000            # Cash currency injected into winner's balance
-    crate_name: common            # ExcellentCrates ID (Make sure it matches your crate config name)
-    key_amount: 1                 # Physical item key drop counter
+    # --- BOX-PVP ZONE RANGE SETUP ---
+    hill_radius: 4                        # Horizontal distance (X and Z axis) around center
+    hill_height: 3                        # Vertical height limit (Y axis) above/below center
+
+    # --- QUICK REWARD SETTINGS ---
+    reward_money: 5000
+    crate_command: crate key give [PLAYER] common 1 # Here you enter the key you want; you can enter other commands normally.
     
-    # ⏳ --- [ IN-ENGINE INTERVAL TIMERS & CONFIGURATION ] ---
-    setnext_interval: 900       # Time between automatic events (In Seconds - Default 3600s = 1 hour)
-    settime_capture: 300 seconds   # Target Hold Capture Time for player to win
-    auto_close_empty: 10 minute    # Match shuts down if zone remains clear for this long (Set to 1 minute for your test)
+    # --- AUTOMATED TIME SETTINGS ---
+    start_interval_saved: 1800            # Seconds until next event starts automatically (3600 = 1 hour)
+    koth_time_saved: 300                  # Capture duration required to win (300 seconds = 5 minutes)
+    no_player_timeout: 600                # Auto-close event if no players interact (300 seconds= 10 minutes)
 
 # ==========================================
 #            INTERNAL SYSTEM CORE
 # ==========================================
 
 on load:
-    set {sqkoth.active} to false
-    set {sqkoth.start_interval_saved} to {@setnext_interval}
-    set {sqkoth.next_start} to {@setnext_interval}
-    set {sqkoth.koth_time_saved} to {@settime_capture}
-    send "[SQKOTH] Official Stable Release Build v{@current_version} successfully loaded and calibrated!" to console
+    set {koth.start_interval_saved} to {@start_interval_saved}
+    set {koth.koth_time_saved} to {@koth_time_saved}
+    set {koth.active} to false
+    set {koth.next_start} to {koth.start_interval_saved}
+    send "[SQKOTH] Core engines successfully compiled with custom shortened lines and exact crate syntax!" to console
 
 every 1 second:
-    # --- WAITING PHASE (Countdown Loop) ---
-    if {sqkoth.active} is false:
-        if {sqkoth.next_start} is not set:
-            set {sqkoth.next_start} to {@setnext_interval}
+    if {koth.pos1} is set:
+
+        # --- WAITING PHASE (Countdown) ---
+        if {koth.active} is false:
+            remove 1 from {koth.next_start}
+            if {koth.next_start} <= 0:
+                execute console command "sqkoth start"
             
-        remove 1 from {sqkoth.next_start}
-        if {sqkoth.next_start} <= 0:
-            execute console command "sqkoth start"
-        
-        set {_m} to floor({sqkoth.next_start} / 60)
-        set {_s} to {sqkoth.next_start} - ({_m} * 60)
-        
-        execute console command "hologram edit {@hologram} setline 1 &6&lSQKOTH EVENT"
-        execute console command "hologram edit {@hologram} setline 2 &eNext Event In:"
-        execute console command "hologram edit {@hologram} setline 3 &a%{_m}%m %{_s}%s"
-        execute console command "hologram edit {@hologram} setline 4 &7Get Ready for Battle!"
-
-    # --- ACTIVE PHASE (Match Calculation Engine) ---
-    if {sqkoth.active} is true:
-        set {_players_in} to 0
-        
-        set {_x1} to min(x-coordinate of {sqkoth.pos1}, x-coordinate of {sqkoth.pos2})
-        set {_x2} to max(x-coordinate of {sqkoth.pos1}, x-coordinate of {sqkoth.pos2})
-        set {_y1} to min(y-coordinate of {sqkoth.pos1}, y-coordinate of {sqkoth.pos2})
-        set {_y2} to max(y-coordinate of {sqkoth.pos1}, y-coordinate of {sqkoth.pos2})
-        set {_z1} to min(z-coordinate of {sqkoth.pos1}, z-coordinate of {sqkoth.pos2})
-        set {_z2} to max(z-coordinate of {sqkoth.pos1}, z-coordinate of {sqkoth.pos2})
-        
-        loop all players:
-            if x-coordinate of loop-player is between {_x1} and {_x2}:
-                if z-coordinate of loop-player is between {_z1} and {_z2}:
-                    if y-coordinate of loop-player is between {_y1} and {_y2}:
-                        if world of loop-player is world of {sqkoth.pos1}:
-                            add 1 to {_players_in}
-                            set {_current_player} to loop-player
-
-        if {_players_in} is 1:
-            set {sqkoth.status} to "&e&lCAPTURING"
-            set {sqkoth.capper} to name of {_current_player}
-            set {sqkoth.inactive_timer} to 0
-            remove 1 second from {sqkoth.timer}
-            if {sqkoth.timer} <= 0 seconds:
-                set {sqkoth.active} to false
-                
-                broadcast " "
-                broadcast " &6&l»»----------- &e&lEVENT FINISHED &6&l-----------««"
-                broadcast " "
-                broadcast "  &eWinner: &f%name of {_current_player}%"
-                broadcast "  &eReward: &a{@reward_money}$ &f+ &dCommon Key"
-                broadcast " "
-                broadcast " &6&l»»---------------------------------------««"
-                broadcast " "
-                
-                execute console command "summon firework_rocket %x-coordinate of {_current_player}% %y-coordinate of {_current_player}% %z-coordinate of {_current_player}% {LifeTime:20,FireworksItem:{id:firework_rocket,Count:1,tag:{Fireworks:{Explosions:[{Type:1,Colors:[I;16744448]}]}}}}"
-                play sound "ui.toast.challenge_complete" with volume 1.5 to all players
-                
-                add {@reward_money} to balance of {_current_player}
-                execute console command "crate key give %name of {_current_player}% {@crate_name} {@key_amount}"
-                
-                set {sqkoth.next_start} to {sqkoth.start_interval_saved}
-
-        else if {_players_in} > 1:
-            set {sqkoth.status} to "&c&lCONTESTED"
-            set {sqkoth.capper} to "Multiple"
-            set {sqkoth.inactive_timer} to 0
-        else:
-            set {sqkoth.status} to "&7&lWAITING"
-            set {sqkoth.capper} to "None"
+            set {_m} to floor({koth.next_start} / 60)
+            set {_s} to {koth.next_start} - ({_m} * 60)
             
-            # المؤقت الداخلي يحسب بالثواني الصافية بدقة متناهية
-            add 1 to {sqkoth.inactive_timer}
-            
-            # تحويل قيمة الأوبشن النصية إلى ثوانٍ رقمية صارمة للفحص التلقائي (1 minute = 60 seconds)
-            set {_check_close} to 60
-            if {sqkoth.inactive_timer} >= {_check_close}:
-                set {sqkoth.active} to false
-                set {sqkoth.next_start} to {sqkoth.start_interval_saved}
-                broadcast " "
-                broadcast "{@prefix} &cThe event ended because there is no active player"
-                broadcast " "
-                execute console command "hologram edit {@hologram} setline 1 &6&lSQKOTH EVENT"
-                execute console command "hologram edit {@hologram} setline 2 &cEVENT CANCELLED"
-                execute console command "hologram edit {@hologram} setline 3 &7Waiting for players"
-                execute console command "hologram edit {@hologram} setline 4 &7to start again"
+            execute console command "hologram edit {@hologram} setline 1 &6&lSQKOTH EVENT"
+            execute console command "hologram edit {@hologram} setline 2 &eNext Event In:"
+            execute console command "hologram edit {@hologram} setline 3 &a%{_m}%m %{_s}%s"
+            execute console command "hologram edit {@hologram} setline 4 &7Get Ready for Battle!"
 
-        set {_display} to "%{sqkoth.timer}%"
-        replace all " seconds" and " second" with "s" in {_display}
-        replace all " minutes" and " minute" with "m" in {_display}
-        
-        if {sqkoth.active} is true:
+        # --- ACTIVE PHASE (Match Logic via Options Variables) ---
+        if {koth.active} is true:
+            clear {_players::*}
+            set {_w} to world of {koth.pos1}
+            loop all players in world {_w}:
+                if loop-player's gamemode is survival:
+                    if distance between loop-player and {koth.pos1} <= {@hill_radius}:
+                        add loop-player to {_players::*} if abs(y-coordinate of loop-player - y-coordinate of {koth.pos1}) <= {@hill_height}
+
+            if size of {_players::*} is 1:
+                set {_p} to {_players::1}
+                set {koth.status} to "&e&lCAPTURING"
+                set {koth.capper} to name of {_p}
+                set {koth.timeout_timer} to {@no_player_timeout}
+                remove 1 second from {koth.timer}
+                if {koth.timer} <= 0 seconds:
+                    set {koth.active} to false
+                    
+                    # --- It tells you who won and what they received. ---
+                    broadcast " "
+                    broadcast "&b&l&m─────────────────────────"
+                    broadcast "  &6&l★ EVENT COMPLETED ★"
+                    broadcast " "
+                    broadcast "  &eWinner » &f%{koth.capper}%"
+                    broadcast "  &eRewards Dispatched »"
+                    broadcast "  &7» &a5000 Coins &7+ &fCommon Key"
+                    broadcast " "
+                    broadcast "&b&l&m─────────────────────────"
+                    broadcast " "
+                    
+                    play sound "ui.toast.challenge_complete" with volume 1.5 to all players
+                    add {@reward_money} to balance of {_p}
+                    set {_final_cmd} to "{@crate_command}"
+                    replace "[PLAYER]" with name of {_p} in {_final_cmd}
+                    execute console command "%{_final_cmd}%"
+                    set {koth.next_start} to {koth.start_interval_saved}
+
+            else if size of {_players::*} > 1:
+                set {koth.status} to "&c&lCONTESTED"
+                set {koth.capper} to "Multiple"
+                set {koth.timeout_timer} to {@no_player_timeout}
+            else:
+                set {koth.status} to "&7&lWAITING"
+                set {koth.capper} to "None"
+                
+                remove 1 from {koth.timeout_timer}
+                if {koth.timeout_timer} <= 0:
+                    set {koth.active} to false
+                    set {koth.next_start} to {koth.start_interval_saved}
+                    broadcast " "
+                    broadcast "{@prefix} &cKOTH ended automatically due to 10 minutes of inactivity."
+                    broadcast " "
+
+            set {_display} to "%{koth.timer}%"
+            replace all " seconds" and " second" with "s" in {_display}
+            replace all " minutes" and " minute" with "m" in {_display}
+            
             execute console command "hologram edit {@hologram} setline 1 &6&lSQKOTH ACTIVE"
-            execute console command "hologram edit {@hologram} setline 2 &fStatus: %{sqkoth.status}%"
+            execute console command "hologram edit {@hologram} setline 2 &fStatus: %{koth.status}%"
             execute console command "hologram edit {@hologram} setline 3 &fTime: &a%{_display}%"
-            execute console command "hologram edit {@hologram} setline 4 &fCapper: &e%{sqkoth.capper}%"
+            execute console command "hologram edit {@hologram} setline 4 &fCapper: &e%{koth.capper}%"
 
 # ==========================================
 #              COMMAND SYSTEM
 # ==========================================
 
-command /sqkoth [<text>] [<number>]:
+command /sqkoth [<text>]:
     permission: sqkoth.admin
     trigger:
         if arg-1 is not set:
-            set {_showhelp} to true
-        else if arg-1 is "help":
-            set {_showhelp} to true
-            
-        if {_showhelp} is true:
-            send " "
-            send "  &6&lSQKOTH ADMIN HELP"
-            send "  &7» &e/sqkoth start &8- &fStart match immediately"
-            send "  &7» &e/sqkoth stop &8- &fStop current match"
-            send "  &7» &e/sqkoth status &8- &bCheck current internal variables"
-            send "  &7» &e/sqkoth reload &8- &fReload script files"
-            send "  &7» &e/sqkoth set1/set2 &8- &fSet SQKOTH area bounds"
-            send " "
+            send "&b&l&m─────────&r &e&lSQ-KOTH ADMIN INTERFACE &b&l&m─────────" to player
+            send "  &7» &b/sqkoth set &8- &fDefine central KOTH arena platform" to player
+            send "  &7» &b/sqkoth remove &8- &fClear zone coordinates & refresh holo" to player
+            send "  &7» &b/sqkoth start &8- &fForce-start match event instantly" to player
+            send "  &7» &b/sqkoth stop &8- &fForce-stop active match event instantly" to player
+            send "  &7» &b/sqkoth reload &8- &fHot-reload configuration files smoothly" to player
+            send " " to player
+            send "  &7» &6&lGitHub » &f&nhttps://github.com" to player
+            send "&b&l&m──────────────────────────────────────────────" to player
             stop
 
         if arg-1 is "reload":
-            execute player command "sk reload sqkoth.sk"
+            execute player command "sk reload sqkoth"
             send "{@prefix} &aSystem reloaded and settings applied!"
+            stop
 
-        if arg-1 is "status":
-            send " "
-            send "  &b&lSQKOTH INTERNAL METRICS ENGINE &7(Build: {@current_version})"
-            if {sqkoth.active} is true:
-                send " &8» &fActive Phase Status: &e&ltrue"
-            else:
-                send " &8» &fActive Phase Status: &e&lfalse"
-            send " &8» &fNext Live Auto-Start In: &e&l%{sqkoth.next_start}% seconds"
-            send " &8» &fTarget Hold Capture Time Condition: &e&l%{sqkoth.koth_time_saved}%"
-            send " &8» &fAuto-Close Inactive Threshold: &a&l{@auto_close_empty}"
+        if arg-1 is "remove":
+            if {koth.pos1} is not set:
+                send "{@prefix} &cThere are no coordinates set to remove!" to player
+                stop
+            clear {koth.pos1}
+            set {koth.active} to false
+            
+            execute console command "hologram edit {@hologram} setline 1 &c&lERROR"
+            execute console command "hologram edit {@hologram} setline 2 &ePlease define the area"
+            execute console command "hologram edit {@hologram} setline 3 &eor put me back in it"
+            execute console command "hologram edit {@hologram} setline 4 &r"
+            
+            send "{@prefix} &eKOTH region coordinates have been successfully removed." to player
             stop
 
         if arg-1 is "start":
-            set {sqkoth.active} to true
-            set {sqkoth.inactive_timer} to 0 # [تم الإصلاح الحاسم]: تصفير المؤقت فوراً هنا لمنع الإغلاق الفجائي التلقائي
-            set {sqkoth.timer} to "%{sqkoth.koth_time_saved}% seconds" parsed as timespan
-            set {sqkoth.status} to "&7&lWAITING"
-            set {sqkoth.next_start} to {sqkoth.start_interval_saved}
+            if {koth.pos1} is not set:
+                send "{@prefix} &cPlease set Center Platform (/sqkoth set) first!" to player
+                stop
+            if {koth.active} is true:
+                send "{@prefix} &cThe KOTH event is already active and running!" to player
+                stop
+                
+            set {koth.active} to true
+            set {koth.timer} to "%{koth.koth_time_saved}% seconds" parsed as timespan
+            set {koth.timeout_timer} to {@no_player_timeout}
+            set {koth.status} to "&7&lWAITING"
+            set {koth.next_start} to {koth.start_interval_saved}
+            
+            # --- It will inform you if the event has started ---
             broadcast " "
-            broadcast "{@prefix} &eAdmin &6%player% &ehas force started the KOTH event!"
+            broadcast "&6&l&m─────────────────────────"
+            broadcast "  &b&l★ EVENT ACTIVATED ★"
             broadcast " "
-            broadcast " &6&l»»----------- &e&lSQKOTH EVENT &6&l-----------««"
+            broadcast "  &eThe battle has begun!"
+            broadcast "  &fCapture the platform to win!"
             broadcast " "
-            broadcast "  &eThe battle for the hill has begun!"
-            broadcast "  &fReward: &a{@reward_money}$ &f+ &dCommon Key"
-            broadcast " "
-            broadcast " &6&l»»-----------------------------------««"
+            broadcast "&6&l&m─────────────────────────"
             broadcast " "
             play sound "entity.lightning_bolt.thunder" with volume 1 to all players
+            stop
 
         if arg-1 is "stop":
-            set {sqkoth.active} to false
-            set {sqkoth.inactive_timer} to 0
+            if {koth.active} is false:
+                send "{@prefix} &cThe KOTH event is already stopped." to player
+                stop
+            set {koth.active} to false
             broadcast " "
-            broadcast "{@prefix} &c&lKOTH EVENT MANUALLY TERMINATED BY ADMIN &e&l%player%&c&l!"
+            broadcast "{@prefix} &c&lEVENT FORCE-STOPPED BY ADMIN"
             broadcast " "
-            execute console command "hologram edit {@hologram} setline 1 &6&lSQKOTH EVENT"
-            execute console command "hologram edit {@hologram} setline 2 &cEVENT STOPPED"
-            execute console command "hologram edit {@hologram} setline 3 &7Waiting for admin"
+            stop
+
+        if arg-1 is "set":
