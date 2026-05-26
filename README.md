@@ -1,78 +1,102 @@
-# SQKoth - King of the hill — Official Stable Release v1.0.0
+# 🏆 SQKOTH — The Ultimate King of the Hill Mini-Engine
 
-An advanced, highly-optimized, and completely autonomous **King of the Hill (KOTH)** event system engineered entirely in pure Skript. Designed specifically for high-performance PvP server environments and fully compatible with low-spec hardware hosts like Aternos without causing any ticks drop or background memory leaks.
-
----
-
-## 💎 Key Features
-
-* **Zero Addon Dependencies:** Runs 100% on standard Vanilla Skript (2.6+). No extra plugins or heavy addons required.
-* **Absolute Math Calibration Engine:** Automatically sorts maximum and minimum coordinates in the background. Setup your arena vectors in any direction without breaking the zone bounding box!
-* **Contested & Anti-Cheat Logic:** Accurately detects when multiple players push the hill. Freezes the countdown instantly if more than one user enters the region.
-* **ExcellentCrates & Vault Hooked:** Distributes physical item keys and automated virtual cash currency balance directly to the victor upon successful hold completion.
-* **Fancy Hologram Integration:** Dynamically updates your active server hologram (`koth_hologram`) frame-by-frame with clean waiting cycles and active player tracking metrics.
+An ultra-optimized, modular, and performance-centric **King of the Hill (KOTH)** event management engine designed for modern Minecraft servers. Built on a zero-addon architecture, it ensures maximum stability, flawless performance, and high-end graphical outputs without straining cloud hosting footprints.
 
 ---
 
-## ⚙️ Core Configuration (Options Panel)
+## 🎯 Project Overview & Objective
 
-You can easily modify rewards, interval cooldown counters, and hold timers at the very top of the script file inside the configuration zone:
+The primary objective of **SQKOTH** is to provide server administrators with an independent, lightweight, and fully automated PvP event solution. It bridges the gap between complex Java plugins and heavy scripting by utilizing standard Minecraft command structures combined with native performance filtering. 
 
-```skript
-options:
-    prefix: &6&lS&e&lQ&b&lKOTH &8»&f
-    hologram: koth_hologram 
-    
-    # Reward Settings
-    reward_money: 5000            # Total cash distributed to the winner
-    crate_name: common            # ExcellentCrates ID for keys distribution
-    key_amount: 1                 # Amount of keys dropped into the winner's inventory
-    
-    # Cycle Timers Configuration
-    setnext_interval: 3600        # Background interval delay between auto-events (In seconds)
-    settime_capture: 10 seconds   # Uninterrupted hold timer required to secure the hill victory
-    auto_close_empty: 15 minutes  # Match shutdown buffer if the arena stays totally empty
-```
+### Core Pillars:
+* **Zero-Addon Footprint:** Requires absolutely no external Skript addons (such as SkBee or SkQuery), neutralizing version incompatibility issues.
+* **Performance-First Logic:** Replaces resource-heavy multi-world baseline looping with centralized structural proximity coordinate math, eradicating Server Tick (TPS) drops.
+* **Flawless Visual Integration:** Dynamically communicates with specialized holographic displaying platforms using strict syntax rendering pipelines.
 
 ---
 
-## 📖 Deep System Manual & Operation Flow
+## 💻 Administrative Commands & Configurations
 
-### ⏳ 1. The Waiting Phase (Idle Countdown Loop)
-Once the server boots or reloads, the script initializes into the **Waiting Phase**. The automated internal looping scheduler begins counting down toward the next match deployment sequence. Every single second, the system pushes a silent data refresh directly to your hologram entity showing:
-* **`SQKOTH EVENT`**
-* **`Next Event In: MMm SSs`** (Live remaining countdown)
-* **`Get Ready for Battle!`**
+### 📄 Comprehensive Command Hierarchy
+All administrative tools utilize modern command arguments with built-in memory safety gates:
 
-### ⚔️ 2. The Active Phase (Live Arena Calculations)
-When the countdown hits zero (or an administrator triggers the event manually via commands), the match switches to the **Active Phase**:
-1. **Global Broadcast:** A clean, slash-free server announcement alerts all online players that the hill is open for capture, printing rewards details.
-2. **Hologram Shifting:** The hologram metrics immediately recalibrate to show live arena tracking arrays:
-   * **`Status: CAPTURING / CONTESTED / WAITING`**
-   * **`Time: [Remaining Seconds]s`**
-   * **`Capper: [Player Name]`**
-3. **Region Evaluation Engine:** The script actively runs spatial boundary looping scripts every 1 second:
-   * **Single Player Present:** Shuts down idle loops, flashes `CAPTURING`, and counts down from `10s` smoothly.
-   * **Multiple Players Present:** Drops anchor, flips status to `CONTESTED`, and freezes the timer. The ticker will not budge until competitors eliminate each other.
-   * **Empty Zone Event:** Refreshes status to `WAITING` and hard-resets the countdown variable back to its initial state to completely prevent cheap exploit wins.
 
-### 🎉 3. The Victory Phase (Rewards & Clean-up Initialization)
-If a dominant combatant successfully holds the secure line for a full, uninterrupted capture cycle:
-* The live state turns off and the idle background scheduling cycle turns back on.
-* Firework rockets are automatically summoned straight onto the victor's current coordinates alongside a universal sound prompt.
-* Vault processes inject the hardcoded currency prize, and console layers dispatch physical keys straight into the player's slots using native **ExcellentCrates** scripts.
+| Command | Permission | Description |
+| :--- | :--- | :--- |
+| `/sqkoth` | `sqkoth.admin` | Accesses the graphical administrative control menu frame. |
+| `/sqkoth set` | `sqkoth.admin` | Binds the central zone location coordinates and teleports the registry hologram. |
+| `/sqkoth remove` | `sqkoth.admin` | Flushes region coordinates from database and broadcasts safe error modes. |
+| `/sqkoth start` | `sqkoth.admin` | Forces the immediate execution of a match session bypassing countdowns. |
+| `/sqkoth stop` | `sqkoth.admin` | Terminates the active capturing cycle and resets the state machines. |
+| `/sqkoth reload` | `sqkoth.admin` | Hot-reloads configuration file modules and cleans runtime variables. |
+
+### ⚙️ Quick Settings Options (`options:`)
+Modify these variables at the very top of the provided script file (`sqkoth.sk`) to customize the environment:
+
+* `prefix`: Define the localized chat prefix.
+* `hologram`: Set the exact registered identifier name matching your holographic system layout.
+* `hill_radius`: Horizontal boundary radius check ($X$ and $Z$ axis distance around the center block).
+* `hill_height`: Vertical ceiling boundary detection check ($Y$ axis distance limit above/below center).
+* `reward_money`: Set the custom Vault cash distribution value given to winners.
+* `crate_command`: Modify the automated crate key rewarding command string to fit your network ecosystem.
+* `start_interval_saved`: Automated cycle cooldown timer until the next game triggers automatically (in seconds).
+* `koth_time_saved`: Capture holding duration threshold required to secure a victory (in seconds).
+* `no_player_timeout`: Anti-stalemate duration gate that closes inactive matches if zero capture interaction happens (in seconds).
 
 ---
 
-## 🛠️ In-Game Admin Commands Array
+## 🛠️ Step-by-Step Production Deployment Guide
 
-Ensure you possess the administrative permission node **`sqkoth.admin`** before trying to map coordinate data vectors or forcing manual loop states:
+Deploying SQKOTH requires strict alignment with production protocols to ensure the data structures initialize correctly inside the Minecraft runtime engine. Follow these exact steps:
 
-* **`/sqkoth set1`** — Calibrates the first boundary vector block at your precise location. (Stand on the lower-left edge block).
-* **`/sqkoth set2`** — Calibrates the second boundary vector block at your precise location. (Stand on the upper-right edge block).
-* **`/sqkoth start`** — Forces an active phase immediately, overrides timer loops, and spawns the capture engine matrix.
-* **`/sqkoth stop`** — Forcefully terminates any active matching state, wipes capture trackers, and returns the world to idle wait states.
-* **`/sqkoth status`** — Pulls live data streams from the caching core to inspect current phase values, positions state variables, and interval thresholds.
-* **`/sqkoth reload`** — Safely flushes memory blocks, unloads dead caching threads, and parses script updates from your core file directory.
+### Phase 1: Dependency Verification & Network Setup
+1. Ensure your server environment is running a compatible software branch (**Paper**, **Purpur**, or **Spigot**) on version **1.21.1**.
+2. Install the mandatory foundation plugins into your `/plugins/` folder: **Skript**, **FancyHolograms**, **Vault**, and an economy provider (e.g., **EssentialsX**).
+3. Restart the server node to fully mount the configuration systems and operational pipelines.
 
-you can join my discord server if you want [: https://discord.gg/28pTmAYCwH
+### Phase 2: Core Script Installation (Ready-Made File)
+1. Download the complete ready-made **`sqkoth.sk`** script file directly from this GitHub repository.
+2. Drop the downloaded **`sqkoth.sk`** file straight into your server file registry path: `/plugins/Skript/scripts/`.
+3. Open the file to tweak the `options:` configurations (rewards, commands, times) to match your setup, and save it.
+4. Execute the runtime compilation command inside your terminal or in-game chat to mount the engine:  
+   ```bash
+   /sk reload sqkoth
+   ```
+5. Confirm that the terminal outputs a `Green Log` indicating successful structural compilation with zero syntax restrictions.
+
+### Phase 3: Holographic Platform Configuration
+1. Travel to your designated PvP arena map environment.
+2. Stand exactly on the desired center point block and initialize the database anchor inside your hologram plugin by creating a text element carrying your identifier tag using the exact syntax below:
+   ```bash
+   /holo create text koth_hologram
+   ```
+3. Expand the layout array to hold exactly **4 operational stacked lines** by adding padding blocks to avoid Java array overflow errors during real-time data streaming:
+   ```bash
+   /holo edit koth_hologram addline .
+   ```
+   *(Repeat this action until your hologram structure registers a total height size of 4 distinct rendering lines).*
+
+### Phase 4: Final Database Anchoring & Live Testing
+1. Stand right back on the center capturing block platform.
+2. Execute the sovereign initialization bridge:
+   ```bash
+   /sqkoth set
+   ```
+   *This command instantly locks the core coordinates inside the script's global registry and seamlessly binds the FancyHolograms entity location directly to your stance.*
+3. Test your system layout resilience by running:
+   ```bash
+   /sqkoth remove
+   ```
+   The engine should instantly flush the position maps and fire the native safety system, changing the holographic presentation to clean text stating: `Please define the area or put me back in it`.
+4. Re-run `/sqkoth set` to anchor it permanently. The deployment is complete! Your engine is ready for production.
+
+---
+
+## 🤝 Community & Support
+
+If you need any help setting up the script, run into any issues, or just want to report a problem, you are more than welcome to join our community! It's not strictly for developers—anyone is welcome to get support or ask questions.
+
+* **💬 Join our Discord Server:** [https://discord.gg](https://discord.gg)
+
+---
+*Developed with care, performance optimization, and easy configuration for everyone.*
