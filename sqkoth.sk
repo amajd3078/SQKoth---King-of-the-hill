@@ -6,7 +6,7 @@
 #  \_/ \____| |_|\_\___/ |_| |_| |_|   |____/___/ |_| |_____|  |____/|_|\_\
 #                                                                           
 #  - Name: SQKOTH (King of the Hill)
-#  - Version: 5.1.0 (Official GitHub Final Release)
+#  - Version: 5.1.1 (The /sqkoth set command has been fixed)
 #  - Category: BoxPvP / PvP MiniGame Mini-Engine
 #  - Environment: Vanilla Skript (Zero Addons Required)
 #  - Compatible Software: Minecraft 1.21.1+ (Paper / Purpur)
@@ -22,17 +22,17 @@ options:
     hologram: koth_hologram 
 
     # --- BOX-PVP ZONE RANGE SETUP ---
-    hill_radius: 4                        # Horizontal distance (X and Z axis) around center
-    hill_height: 3                        # Vertical height limit (Y axis) above/below center
+    hill_radius: 4                        # Horizontal distance around center
+    hill_height: 3                        # Vertical height limit above/below center
 
     # --- QUICK REWARD SETTINGS ---
     reward_money: 5000
-    crate_command: crate key give [PLAYER] common 1 # Here you enter the key you want; you can enter other commands normally.
+    crate_command: crate key give [PLAYER] common 1 
     
     # --- AUTOMATED TIME SETTINGS ---
-    start_interval_saved: 1800            # Seconds until next event starts automatically (3600 = 1 hour)
-    koth_time_saved: 300                  # Capture duration required to win (300 seconds = 5 minutes)
-    no_player_timeout: 600                # Auto-close event if no players interact (300 seconds= 10 minutes)
+    start_interval_saved: 1800            # Seconds until next event starts automatically
+    koth_time_saved: 300                  # Capture duration required to win
+    no_player_timeout: 600                # Auto-close event if no players interact
 
 # ==========================================
 #            INTERNAL SYSTEM CORE
@@ -80,16 +80,16 @@ every 1 second:
                 if {koth.timer} <= 0 seconds:
                     set {koth.active} to false
                     
-                    # --- It tells you who won and what they received. ---
+                    # --- Broadcast Winner Details (Formatted Shape) ---
                     broadcast " "
-                    broadcast "&b&l&m─────────────────────────"
+                    broadcast "&b&l&m───────────────"
                     broadcast "  &6&l★ EVENT COMPLETED ★"
                     broadcast " "
                     broadcast "  &eWinner » &f%{koth.capper}%"
                     broadcast "  &eRewards Dispatched »"
                     broadcast "  &7» &a5000 Coins &7+ &fCommon Key"
                     broadcast " "
-                    broadcast "&b&l&m─────────────────────────"
+                    broadcast "&b&l&m───────────────"
                     broadcast " "
                     
                     play sound "ui.toast.challenge_complete" with volume 1.5 to all players
@@ -123,7 +123,6 @@ every 1 second:
             execute console command "hologram edit {@hologram} setline 2 &fStatus: %{koth.status}%"
             execute console command "hologram edit {@hologram} setline 3 &fTime: &a%{_display}%"
             execute console command "hologram edit {@hologram} setline 4 &fCapper: &e%{koth.capper}%"
-
 # ==========================================
 #              COMMAND SYSTEM
 # ==========================================
@@ -132,15 +131,13 @@ command /sqkoth [<text>]:
     permission: sqkoth.admin
     trigger:
         if arg-1 is not set:
-            send "&b&l&m─────────&r &e&lSQ-KOTH ADMIN INTERFACE &b&l&m─────────" to player
+            send "&b&l&m───────&r &e&lSQ-KOTH ADMIN INTERFACE &b&l&m───────" to player
             send "  &7» &b/sqkoth set &8- &fDefine central KOTH arena platform" to player
             send "  &7» &b/sqkoth remove &8- &fClear zone coordinates & refresh holo" to player
             send "  &7» &b/sqkoth start &8- &fForce-start match event instantly" to player
             send "  &7» &b/sqkoth stop &8- &fForce-stop active match event instantly" to player
             send "  &7» &b/sqkoth reload &8- &fHot-reload configuration files smoothly" to player
-            send " " to player
-            send "  &7» &6&lGitHub » &f&nhttps://github.com" to player
-            send "&b&l&m──────────────────────────────────────────────" to player
+            send "&b&l&m──────────────────────────────" to player
             stop
 
         if arg-1 is "reload":
@@ -150,7 +147,7 @@ command /sqkoth [<text>]:
 
         if arg-1 is "remove":
             if {koth.pos1} is not set:
-                send "{@prefix} &cThere are no coordinates set to remove!" to player
+                send "{@prefix} &cThere are no coordinates set to remove! Use &e/sqkoth set &cfirst." to player
                 stop
             clear {koth.pos1}
             set {koth.active} to false
@@ -177,27 +174,37 @@ command /sqkoth [<text>]:
             set {koth.status} to "&7&lWAITING"
             set {koth.next_start} to {koth.start_interval_saved}
             
-            # --- It will inform you if the event has started ---
+            # --- Event Activation Broadcast ---
             broadcast " "
-            broadcast "&6&l&m─────────────────────────"
+            broadcast "&6&l&m───────────────"
             broadcast "  &b&l★ EVENT ACTIVATED ★"
             broadcast " "
             broadcast "  &eThe battle has begun!"
             broadcast "  &fCapture the platform to win!"
             broadcast " "
-            broadcast "&6&l&m─────────────────────────"
+            broadcast "&6&l&m───────────────"
             broadcast " "
             play sound "entity.lightning_bolt.thunder" with volume 1 to all players
             stop
-
         if arg-1 is "stop":
             if {koth.active} is false:
                 send "{@prefix} &cThe KOTH event is already stopped." to player
                 stop
-            set {koth.active} to false
+            
+            # Broadcast the message first to ensure it reaches all players before resetting the engine
             broadcast " "
             broadcast "{@prefix} &c&lEVENT FORCE-STOPPED BY ADMIN"
             broadcast " "
+            
+            set {koth.active} to false
+            set {koth.next_start} to {koth.start_interval_saved}
             stop
 
         if arg-1 is "set":
+            if {koth.pos1} is set:
+                send "{@prefix} &cThe KOTH region is already set! Use &e/sqkoth remove &cfirst." to player
+                stop
+            set {koth.pos1} to player's location
+            send "{@prefix} &aKOTH platform region successfully defined!" to player
+            execute console command "hologram move {@hologram} %player's x-coordinate% %player's y-coordinate + 2% %player's z-coordinate% %player's world%"
+            stop
