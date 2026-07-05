@@ -96,7 +96,7 @@ Deploying SQKOTH requires strict alignment with production protocols to ensure t
 
 If you need any help setting up the script, run into any issues, or just want to report a problem, you are more than welcome to join our community! It's not strictly for developers—anyone is welcome to get support or ask questions.
 
-* **💬 Join our Discord Server:** https://discord.gg/28pTmAYCwH
+* **💬 Join our Discord Server:** [https://discord.gg/DYkUr5mK3n]
 
 ---
 *Developed with care, performance optimization, and easy configuration for everyone.*
